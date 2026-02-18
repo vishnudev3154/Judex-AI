@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cases | Judex AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { surface: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow-x: hidden; overflow-y: visible !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-surface-950 text-slate-300 font-sans h-screen flex overflow-hidden selection:bg-blue-500/30">
+
+    <aside class="w-64 glass-panel border-r-0 border-r-white/5 hidden md:flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-8">
+                <span class="text-xl font-bold tracking-tight text-white">JUDEX<span class="text-blue-500">.AI</span></span>
+            </div>
+            <nav class="mt-8 px-4 space-y-2">
+                <a href="{% url 'user_dashboard' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                    <i class="fa-solid fa-layer-group w-6 text-center"></i> <span class="ml-2">Dashboard</span>
+                </a>
+
+                <a href="{% url 'find_lawyer' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i class="fa-solid fa-user-tie w-6 text-center"></i> <span class="ml-2">Find Lawyer</span>
+                </a>
+
+                <a href="#" class="flex items-center px-4 py-3 text-yellow-500 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+                    <i class="fa-solid fa-gavel w-6 text-center"></i> <span class="ml-2">Virtual Court</span>
+                </a>
+
+                <a href="{% url 'chat' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                    <i class="fa-solid fa-robot w-6 text-center"></i> <span class="ml-2">AI Assistant</span>
+                </a>
+
+                <a href="#" class="flex items-center px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl border border-blue-500/20 font-medium">
+                    <i class="fa-solid fa-file-contract w-6 text-center"></i> <span class="ml-2">My Cases</span>
+                </a>
+
+                <a href="{% url 'create_case' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i class="fa-solid fa-file-circle-plus w-6 text-center"></i> <span class="ml-2">Register Case</span>
+                </a>
+
+                <a href="{% url 'predictions' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all group">
+                    <i class="fa-solid fa-scale-balanced w-6 text-center"></i> <span class="ml-2">Predictions</span>
+                </a>
+            </nav>
+        </div>
+        <div class="p-4 border-t border-white/5">
+             <a href="{% url 'logout' %}" class="flex items-center justify-center w-full py-2.5 text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/10">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10 bg-gradient-to-br from-surface-950 to-[#0b1121]">
+        
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-4 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-500/20 text-green-200{% else %}bg-red-500/20 text-red-200{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">My Case Files</h1>
+                <p class="text-slate-400">View and manage your submitted legal cases.</p>
+            </div>
+            
+            <a href="{% url 'create_case' %}" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-blue-500/20 hover:shadow-blue-500/40 border border-blue-400/20">
+                <i class="fa-solid fa-plus"></i>
+                <span>File New Case</span>
+            </a>
+        </header>
+
+        <div class="glass-panel rounded-2xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead class="text-xs text-slate-500 uppercase bg-surface-900/50 border-b border-white/5">
+                        <tr>
+                            <th class="px-6 py-4 font-semibold">Case Details</th>
+                            <th class="px-6 py-4 font-semibold">Date</th>
+                            <th class="px-6 py-4 font-semibold">Status</th>
+                            <th class="px-6 py-4 font-semibold text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for case in cases %}
+                        <tr class="hover:bg-white/5 transition-colors group">
+                            <td class="px-6 py-4 align-top">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 ring-1 ring-blue-500/20">
+                                        <i class="fa-solid fa-folder-closed"></i>
+                                    </div>
+                                    <div>
+                                        <a href="{% url 'case_analysis' case.id %}" class="font-medium text-slate-200 text-base hover:text-blue-400 hover:underline transition-colors block">
+                                            {{ case.case_title|default:"Untitled Case" }}
+                                        </a>
+                                        <div class="text-xs text-slate-500 mt-0.5">ID: #{{ case.id }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <td class="px-6 py-4 text-slate-400 align-middle">
+                                {{ case.created_at|date:"M d, Y" }}
+                            </td>
+
+                            <td class="px-6 py-4 align-middle">
+                                {% if not case.is_reviewed %}
+                                    <div class="flex items-center gap-2 text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full w-fit border border-yellow-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> Processing
+                                    </div>
+                                {% else %}
+                                    <div class="flex items-center gap-2 text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full w-fit border border-emerald-500/20">
+                                        <i class="fa-solid fa-check text-[10px]"></i> Analyzed
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-6 py-4 text-right align-middle">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="{% url 'case_analysis' case.id %}" class="bg-surface-800 hover:bg-emerald-600 hover:text-white text-slate-300 px-3 py-1.5 rounded-lg border border-white/10 transition-all text-xs font-medium">
+                                        <i class="fa-solid fa-file-lines"></i> Report
+                                    </a>
+
+                                    <button onclick="openModal('{{ case.id }}', '{{ case.case_title|escapejs }}')" 
+                                            class="bg-surface-800 hover:bg-indigo-600 hover:text-white text-slate-300 px-3 py-1.5 rounded-lg border border-white/10 transition-all text-xs font-medium flex items-center gap-2">
+                                        <i class="fa-solid fa-paper-plane"></i> Send to Lawyer
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-16 text-center text-slate-500 italic">
+                                You haven't filed any cases yet.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="lawyerModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-black/70 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="modal-container bg-surface-900 w-11/12 md:max-w-md mx-auto rounded-2xl shadow-2xl z-50 border border-white/10 overflow-y-auto">
+            <div class="px-6 py-4 border-b border-white/10 flex justify-between items-center bg-surface-800">
+                <p class="text-lg font-bold text-white">Send Case to Lawyer</p>
+                <div class="cursor-pointer z-50 text-slate-400 hover:text-white" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <div class="px-6 py-6">
+                <p class="text-sm text-slate-400 mb-4">Forward <strong id="modalCaseTitle" class="text-white"></strong> to an accepted lawyer:</p>
+                <form action="{% url 'forward_case_to_lawyer' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="case_id" id="modalCaseId">
+                    <div class="mb-6">
+                        <select name="lawyer_connection_id" required class="block w-full bg-black/30 border border-white/10 text-slate-300 py-3 px-4 rounded-xl focus:outline-none focus:border-blue-500">
+                            <option value="" disabled selected>-- Choose a Lawyer --</option>
+                            {% for conn in accepted_lawyers %}
+                                <option value="{{ conn.id }}">Adv. {{ conn.lawyer.first_name }} {{ conn.lawyer.last_name }}</option>
+                            {% empty %}
+                                <option disabled>No active lawyer connections found.</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="flex justify-end gap-3">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-400 text-sm">Cancel</button>
+                        <button type="submit" class="px-6 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-bold transition-all">Send Now</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(caseId, caseTitle) {
+            document.getElementById('modalCaseId').value = caseId;
+            document.getElementById('modalCaseTitle').innerText = caseTitle;
+            const modal = document.getElementById('lawyerModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+        }
+        function closeModal() {
+            const modal = document.getElementById('lawyerModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+        }
+    </script>
+</body>
+</html>

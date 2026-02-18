@@ -1,0 +1,178 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lawyer Dashboard | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #fff; }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Modal Animation */
+        .modal { transition: opacity 0.25s ease; }
+        body.modal-active { overflow-y: hidden; }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-sans">
+
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-20">
+        <div class="h-20 flex items-center px-8 border-b border-slate-800">
+            <span class="font-bold text-lg tracking-wide">JUDEX<span class="text-indigo-500">.AI</span></span>
+        </div>
+        <nav class="flex-1 py-6 space-y-1">
+            <a href="#" class="flex items-center px-8 py-3 bg-white/5 text-white border-l-4 border-indigo-500">
+                <i class="fas fa-chart-pie w-6"></i> Dashboard
+            </a>
+            <a href="{% url 'client_messages' %}" class="flex items-center px-8 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fas fa-comment-dots w-6"></i> <span class="ml-2">Messages</span>
+            </a>
+            <a href="{% url 'logout' %}" class="flex items-center px-8 py-3 text-slate-400 hover:text-white transition-colors">
+                <i class="fas fa-sign-out-alt w-6"></i> Logout
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-slate-800">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold">
+                    {{ request.user.first_name|slice:":1" }}
+                </div>
+                <div>
+                    <p class="text-sm font-medium">Adv. {{ request.user.first_name }}</p>
+                    <p class="text-xs text-slate-500">Lawyer Account</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto bg-slate-950 p-8">
+        
+        <header class="flex justify-between items-end mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-white">Lawyer Dashboard</h1>
+                <p class="text-slate-400 mt-1">Review forwarded submissions and manage hiring requests.</p>
+            </div>
+        </header>
+
+        <div class="mb-12">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-file-import text-blue-400 mr-2"></i> Forwarded Case Files
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for case in request.user.lawyer_cases.all %}
+                    {% for msg in case.chats.all %}
+                        {% if "FORWARDED CASE FILE" in msg.message %}
+                        <div class="glass-panel p-4 rounded-xl border-blue-500/30 border flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-start mb-2">
+                                    <span class="text-[10px] font-black bg-blue-500 text-white px-2 py-0.5 rounded uppercase tracking-tighter">New Case Data</span>
+                                    <span class="text-[10px] text-slate-500">{{ msg.timestamp|date:"M d, Y" }}</span>
+                                </div>
+                                <h4 class="font-bold text-white text-sm mb-1">Case: {{ case.case_title }}</h4>
+                                <p class="text-xs text-slate-400 mb-2">From: <span class="text-slate-200">{{ case.client.first_name }}</span></p>
+                                <p class="text-xs text-slate-400 line-clamp-3 mb-4 italic">"{{ msg.message|truncatechars:150 }}"</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <a href="{% url 'case_chat' case.id %}" class="flex-1 bg-slate-800 hover:bg-slate-700 text-white text-center py-2 rounded-lg text-xs font-bold transition-all border border-white/5">
+                                    View in Chat
+                                </a>
+                                {% if msg.file %}
+                                <a href="{{ msg.file.url }}" target="_blank" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mb-12">
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center">
+                <i class="fas fa-bell text-yellow-400 mr-2"></i> Pending Hiring Requests
+            </h2>
+            <div class="glass-panel rounded-xl overflow-hidden shadow-lg">
+                <table class="w-full text-left text-sm text-slate-400">
+                    <thead class="bg-white/5 text-slate-200 uppercase text-xs font-black tracking-widest">
+                        <tr>
+                            <th class="px-6 py-4">Client</th>
+                            <th class="px-6 py-4">Case Title</th>
+                            <th class="px-6 py-4 text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for case in request.user.lawyer_cases.all %}
+                            {% if case.status == 'Pending' %}
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="px-6 py-4 text-white font-bold">{{ case.client.first_name }}</td>
+                                <td class="px-6 py-4">{{ case.case_title }}</td>
+                                <td class="px-6 py-4 text-right flex justify-end gap-2">
+                                    <a href="{% url 'update_case_status' case.id 'Accepted' %}" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all shadow-lg shadow-emerald-900/20">Accept</a>
+                                    <a href="{% url 'update_case_status' case.id 'Rejected' %}" class="bg-red-600/20 text-red-500 hover:bg-red-600 hover:text-white px-4 py-1.5 rounded-lg text-xs font-bold transition-all">Reject</a>
+                                </td>
+                            </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <div id="caseModal" class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center z-50">
+        <div class="modal-overlay absolute w-full h-full bg-black/80 backdrop-blur-sm" onclick="closeCaseModal()"></div>
+        <div class="bg-slate-900 w-11/12 md:max-w-lg mx-auto rounded-2xl shadow-2xl z-50 border border-slate-700 overflow-hidden transform scale-95 transition-transform duration-300" id="modalContent">
+            <div class="px-6 py-4 border-b border-slate-800 bg-slate-950 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white" id="modalTitle">Case Details</h3>
+                <button onclick="closeCaseModal()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[60vh]">
+                <div class="mb-4">
+                    <span class="text-xs uppercase text-slate-500 font-bold">Client</span>
+                    <p class="text-slate-200 text-lg" id="modalClient">--</p>
+                </div>
+                <div class="mb-6">
+                    <span class="text-xs uppercase text-slate-500 font-bold">Brief</span>
+                    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mt-2 text-sm text-slate-300" id="modalDesc"></div>
+                </div>
+            </div>
+            <div class="px-6 py-4 bg-slate-950 flex gap-3">
+                <button onclick="closeCaseModal()" class="flex-1 py-3 rounded-xl border border-slate-700 text-slate-400">Close</button>
+                <a id="modalCourtBtn" href="#" class="flex-1 py-3 rounded-xl bg-purple-600 text-white text-center font-bold">Virtual Court</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openCaseModal(id, title, client, desc, docUrl) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalClient').textContent = client;
+            document.getElementById('modalDesc').textContent = desc;
+            let courtBaseUrl = "{% url 'virtual_court_view' 0 %}"; 
+            document.getElementById('modalCourtBtn').href = courtBaseUrl.replace('0', id);
+            const modal = document.getElementById('caseModal');
+            modal.classList.remove('opacity-0', 'pointer-events-none');
+            document.body.classList.add('modal-active');
+            document.getElementById('modalContent').classList.add('scale-100');
+        }
+
+        function closeCaseModal() {
+            const modal = document.getElementById('caseModal');
+            modal.classList.add('opacity-0', 'pointer-events-none');
+            document.body.classList.remove('modal-active');
+            document.getElementById('modalContent').classList.remove('scale-100');
+        }
+    </script>
+</body>
+</html>

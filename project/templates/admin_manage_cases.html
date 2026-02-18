@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Management | AI Court Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --sidebar-dark: #1e293b;
+            --danger-soft: #fee2e2;
+            --success-soft: #dcfce7;
+            --warning-soft: #fef9c3;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+        }
+
+        /* Sidebar (Matching previous pages) */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            position: fixed;
+            background: var(--sidebar-dark);
+            color: white;
+            padding: 1.5rem;
+            z-index: 1000;
+        }
+
+        .sidebar .nav-link {
+            color: #94a3b8;
+            padding: 0.8rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: 0.3s;
+            text-decoration: none;
+            display: block;
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 260px;
+            padding: 2.5rem;
+        }
+
+        /* Modern Table Card */
+        .case-card {
+            background: white;
+            border-radius: 20px;
+            border: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background: #f8fafc;
+            border: none;
+            padding: 1.2rem;
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .table tbody td {
+            padding: 1.2rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        /* Status Pills */
+        .badge-pill {
+            padding: 0.5rem 0.8rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+        }
+        .status-flagged { background: var(--danger-soft); color: #b91c1c; }
+        .status-reviewed { background: var(--success-soft); color: #15803d; }
+        .status-pending { background: var(--warning-soft); color: #854d0e; }
+
+        /* Action Buttons */
+        .btn-modern {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            transition: 0.2s;
+        }
+
+        .doc-link {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+        .doc-link:hover { color: #4338ca; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="mb-5 px-2">
+        <h4 class="fw-bold"><i class="fas fa-balance-scale me-2 text-info"></i>AI Court</h4>
+    </div>
+    <nav class="nav flex-column">
+        <a href="{% url 'admin_dashboard' %}" class="nav-link"><i class="fas fa-th-large me-2"></i>Dashboard</a>
+        <a href="{% url 'manage_users' %}" class="nav-link"><i class="fas fa-user-shield me-2"></i>Users</a>
+        <a href="#" class="nav-link active"><i class="fas fa-folder-open me-2"></i>Case Data</a>
+        <a href="#" class="nav-link"><i class="fas fa-microchip me-2"></i>AI Engine</a>
+    </nav>
+</aside>
+
+<main class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Case Data Management</h2>
+            <p class="text-muted">Manage anonymized case submissions and content quality.</p>
+        </div>
+        <div class="bg-white p-2 rounded-3 shadow-sm px-3 border d-flex align-items-center">
+            <i class="fas fa-filter text-muted me-2"></i>
+            <span class="text-muted small">Total Submissions: <b>{{ cases|length }}</b></span>
+        </div>
+    </div>
+
+    <div class="case-card">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th>Case Reference</th>
+                        <th>Submission Date</th>
+                        <th>System Status</th>
+                        <th>Documentation</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for case in cases %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ case.case_title }}</div>
+                            <div class="text-muted small">Ref: #CASE-{{ case.id|add:"1000" }}</div>
+                        </td>
+                        <td>
+                            <div class="text-dark small"><i class="far fa-calendar-alt me-1 text-muted"></i> {{ case.created_at|date:"d M Y" }}</div>
+                        </td>
+                        <td>
+                            {% if case.is_flagged %}
+                                <span class="badge-pill status-flagged"><i class="fas fa-exclamation-triangle me-1"></i> Flagged</span>
+                            {% elif case.is_reviewed %}
+                                <span class="badge-pill status-reviewed"><i class="fas fa-check-double me-1"></i> Reviewed</span>
+                            {% else %}
+                                <span class="badge-pill status-pending"><i class="fas fa-clock me-1"></i> Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if case.document %}
+                                <a href="{{ case.document.url }}" class="doc-link" target="_blank">
+                                    <i class="fas fa-file-pdf me-2 fa-lg"></i> View File
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">No Document</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a href="{% url 'review_case' case.id %}" class="btn btn-modern btn-outline-success">
+                                    <i class="fas fa-eye me-1"></i> Review
+                                </a>
+                                <a href="{% url 'flag_case' case.id %}" 
+                                   class="btn btn-modern {% if case.is_flagged %}btn-success{% else %}btn-outline-danger{% endif %}">
+                                    {% if case.is_flagged %}
+                                        <i class="fas fa-flag-checkered me-1"></i> Unflag
+                                    {% else %}
+                                        <i class="fas fa-flag me-1"></i> Flag
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="fas fa-inbox fa-3x mb-3 opacity-25"></i>
+                                <p>No case submissions currently in the system.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{% url 'admin_dashboard' %}" class="btn text-muted"><i class="fas fa-arrow-left me-2"></i>Return to Dashboard</a>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

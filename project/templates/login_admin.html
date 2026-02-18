@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Portal | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: url("{% static 'image/login.png' %}") no-repeat center center fixed;
+            background-size: cover;
+        }
+        .bg-overlay {
+            position: fixed; inset: 0;
+            background: radial-gradient(circle, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.95) 100%);
+            z-index: -1;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(239, 68, 68, 0.2); /* Red tint for Admin */
+        }
+    </style>
+</head>
+<body class="font-sans text-white min-h-screen flex items-center justify-center p-4">
+    <div class="bg-overlay"></div>
+
+    <div class="glass-card w-full max-w-md p-10 rounded-[2.5rem] text-center relative z-10 shadow-2xl">
+        
+        <div class="mb-6">
+            <div class="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-3xl flex items-center justify-center mx-auto shadow-lg">
+                <i class="fas fa-user-shield text-4xl text-red-500"></i>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-bold mb-2 tracking-tight">System Terminal</h2>
+        <p class="text-red-500 text-[10px] mb-10 font-black uppercase tracking-[0.4em]">Administrative Access Only</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-2xl text-xs font-bold bg-red-600/20 text-red-200 border border-red-500/30">
+                    <i class="fas fa-terminal mr-2"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" class="text-left space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-slate-500 text-[10px] uppercase font-black tracking-widest ml-5 mb-2">Admin Identifier</label>
+                <div class="relative">
+                    <input type="text" name="username" class="w-full bg-black/40 border border-white/10 rounded-full px-6 py-4 text-white placeholder-slate-700 focus:outline-none focus:border-red-500 transition-all" placeholder="Enter Username" required>
+                    <i class="fas fa-key absolute right-6 top-4.5 text-slate-700"></i>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-slate-500 text-[10px] uppercase font-black tracking-widest ml-5 mb-2">Security Passcode</label>
+                <div class="relative">
+                    <input type="password" name="password" class="w-full bg-black/40 border border-white/10 rounded-full px-6 py-4 text-white placeholder-slate-700 focus:outline-none focus:border-red-500 transition-all" placeholder="••••••••" required>
+                    <i class="fas fa-lock absolute right-6 top-4.5 text-slate-700"></i>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-red-600 hover:bg-red-500 text-white font-black py-4 rounded-full shadow-lg shadow-red-600/20 transition-all transform active:scale-95 text-xs tracking-widest">
+                INITIALIZE COMMAND
+            </button>
+        </form>
+
+        <div class="mt-10 pt-6 border-t border-white/5">
+            <a href="{% url 'home' %}" class="text-slate-500 text-xs hover:text-white transition-all uppercase tracking-widest">
+                <i class="fas fa-chevron-left mr-2"></i> Return to Site
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,181 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User History | Judex AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-[#020617] text-slate-300 min-h-screen p-6 lg:p-10">
+
+    <div class="max-w-6xl mx-auto mb-8 flex justify-between items-center">
+        <div>
+            <a href="{% url 'manage_users' %}" class="text-sm text-blue-400 hover:text-white transition-colors mb-2 inline-block">
+                <i class="fa-solid fa-arrow-left mr-1"></i> Back to Users
+            </a>
+            <h1 class="text-2xl font-bold text-white">Client Dossier</h1>
+        </div>
+        
+        {% if target_user.is_active %}
+            <span class="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold">
+                ACTIVE ACCOUNT
+            </span>
+        {% else %}
+            <span class="px-3 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20 text-xs font-bold">
+                BLOCKED ACCOUNT
+            </span>
+        {% endif %}
+    </div>
+
+    <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <div class="glass-panel rounded-2xl p-6 h-fit">
+            <div class="flex flex-col items-center text-center mb-6">
+                <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-3xl text-white font-bold shadow-lg mb-4">
+                    {{ target_user.username|slice:":1"|upper }}
+                </div>
+                <h2 class="text-xl font-bold text-white">{{ target_user.username }}</h2>
+                <p class="text-sm text-slate-500">{{ target_user.email }}</p>
+            </div>
+            
+            <div class="border-t border-white/5 pt-4 space-y-3 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-slate-500">Joined On</span>
+                    <span class="text-slate-200">{{ target_user.date_joined|date:"M d, Y" }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-slate-500">User ID</span>
+                    <span class="font-mono text-slate-400">#{{ target_user.id }}</span>
+                </div>
+            </div>
+
+            <div class="bg-blue-500/5 p-4 rounded-xl mt-6 border border-blue-500/10 text-center">
+                <div class="text-2xl font-bold text-blue-400">{{ total_cases }}</div>
+                <div class="text-[10px] uppercase text-slate-500 tracking-widest font-black">Total Submissions</div>
+            </div>
+        </div>
+
+        <div class="lg:col-span-2 space-y-6">
+            
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-white/5 bg-white/5 flex justify-between items-center">
+                    <h3 class="font-semibold text-white">
+                        <i class="fa-solid fa-folder-closed mr-2 text-blue-400"></i>Submitted Cases
+                    </h3>
+                </div>
+                <div class="overflow-x-auto max-h-64 overflow-y-auto custom-scrollbar">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-surface-900/50 sticky top-0 backdrop-blur-md">
+                            <tr>
+                                <th class="px-6 py-3">Date</th>
+                                <th class="px-6 py-3">Title</th>
+                                <th class="px-6 py-3 text-right">Document</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            {% for case in user_cases %}
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="px-6 py-3 text-slate-500 text-xs">{{ case.created_at|date:"M d, Y" }}</td>
+                                <td class="px-6 py-3 font-medium text-slate-300">{{ case.case_title }}</td>
+                                <td class="px-6 py-3 text-right">
+                                    {% if case.document %}
+                                        <a href="{{ case.document.url }}" target="_blank" class="text-blue-400 hover:text-white text-[10px] uppercase font-bold px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 transition-all">
+                                            Retrieve File
+                                        </a>
+                                    {% else %}
+                                        <span class="text-slate-600 text-xs italic">No Attachment</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="px-6 py-6 text-center text-slate-500 italic">No cases submitted.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl overflow-hidden">
+                <div class="px-6 py-4 border-b border-white/5 bg-white/5">
+                    <h3 class="font-semibold text-white">
+                        <i class="fa-solid fa-align-left mr-2 text-indigo-400"></i>Case Descriptions
+                    </h3>
+                </div>
+                
+                <div class="p-4 space-y-3 max-h-[600px] overflow-y-auto custom-scrollbar">
+                    {% for case in user_cases %}
+                    <div class="rounded-xl bg-surface-900/40 border border-white/5 overflow-hidden transition-all">
+                        
+                        <div onclick="toggleDescription('case-{{ case.id }}')" 
+                             class="flex items-center justify-between p-4 cursor-pointer hover:bg-white/5 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                                    <i class="fa-solid fa-file-lines text-xs"></i>
+                                </div>
+                                <div>
+                                    <div class="text-sm font-bold text-slate-200">{{ case.case_title }}</div>
+                                    <div class="text-[10px] text-slate-500 uppercase tracking-tighter">Submitted {{ case.created_at|date:"M d, Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <span class="text-[10px] text-slate-600 font-mono">ID: #{{ case.id }}</span>
+                                <i id="icon-case-{{ case.id }}" class="fa-solid fa-chevron-down text-slate-500 text-xs transition-transform duration-300"></i>
+                            </div>
+                        </div>
+
+                        <div id="case-{{ case.id }}" class="hidden border-t border-white/5 bg-[#0b1121] p-6">
+                            <div class="text-xs uppercase font-black text-slate-600 mb-2 tracking-widest">Case Description / Text Submission</div>
+                            <div class="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap bg-black/20 p-4 rounded-xl border border-white/5">
+                                {{ case.case_text|default:"No description provided for this submission." }}
+                            </div>
+                            
+                            {% if case.analysis_result %}
+                            <div class="mt-6">
+                                <div class="text-xs uppercase font-black text-emerald-500/60 mb-2 tracking-widest">AI Analysis Result</div>
+                                <div class="text-xs text-slate-400 italic bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10">
+                                    {{ case.analysis_result|truncatechars:500 }}...
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-6 text-slate-500 italic text-sm">No detailed case records available.</div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleDescription(caseId) {
+            const content = document.getElementById(caseId);
+            const icon = document.getElementById('icon-' + caseId);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.classList.add('rotate-180');
+            } else {
+                content.classList.add('hidden');
+                icon.classList.remove('rotate-180');
+            }
+        }
+    </script>
+
+</body>
+</html>

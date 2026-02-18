@@ -1,0 +1,237 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Judex AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        surface: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' },
+                        glass: { border: 'rgba(255, 255, 255, 0.08)' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card {
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.4));
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s ease;
+        }
+        .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.6));
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-surface-950 text-slate-300 font-sans h-screen flex overflow-hidden selection:bg-blue-500/30">
+
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-emerald-900/10 rounded-full blur-[100px]"></div>
+    </div>
+
+    <aside class="w-64 glass-panel border-r-0 border-r-glass-border hidden md:flex flex-col justify-between z-20">
+        <div>
+            <div class="h-20 flex items-center px-8">
+                <span class="text-xl font-bold tracking-tight text-white">JUDEX<span class="text-blue-500">.AI</span></span>
+            </div>
+
+            <nav class="mt-8 px-4 space-y-2">
+                <a href="#" class="flex items-center px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl border border-blue-500/20 font-medium">
+                    <i class="fa-solid fa-layer-group w-6"></i> Dashboard
+                </a>
+                
+                <a href="{% url 'find_lawyer' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i class="fa-solid fa-user-tie w-6"></i> Find Lawyer
+                </a>
+
+<a href="{% url 'virtual_court' %}" 
+   class="flex items-center px-4 py-3 text-yellow-500 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+    <i class="fa-solid fa-gavel w-6"></i> Virtual Court
+</a>
+
+
+                <a href="{% url 'chat' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i class="fa-solid fa-robot w-6"></i> AI Assistant
+                </a>
+                
+                <a href="{% url 'my_cases' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i class="fa-solid fa-file-contract w-6"></i> My Cases
+                </a>
+
+                <a href="{% url 'create_case' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                    <i class="fa-solid fa-file-circle-plus w-6"></i> Register Case
+                </a>
+
+                <a href="{% url 'predictions' %}" class="flex items-center px-4 py-3 text-emerald-400 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+                    <i class="fa-solid fa-scale-balanced w-6"></i> Predictions
+                </a>
+            </nav>
+        </div>
+
+        <div class="p-4 border-t border-white/5">
+            <div class="flex items-center gap-3 px-2 mb-4">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">
+                    {{ request.user.first_name|slice:":1" }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-white truncate">{{ request.user.first_name }}</p>
+                    <p class="text-xs text-slate-500 truncate">Client Account</p>
+                </div>
+            </div>
+            <a href="{% url 'logout' %}" class="flex items-center justify-center w-full py-2.5 text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/10">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10">
+        <header class="flex justify-between items-end mb-10">
+            <div>
+                <h1 class="text-3xl font-bold text-white mb-2">Welcome back, {{ request.user.first_name }}</h1>
+                <p class="text-slate-400">Manage your legal cases and consult with lawyers.</p>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <a href="{% url 'find_lawyer' %}" class="block glass-card p-6 rounded-2xl relative overflow-hidden group border border-indigo-500/30">
+                <div class="absolute inset-0 bg-gradient-to-r from-indigo-600/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-indigo-500/20 rounded-lg text-indigo-400 relative z-10"><i class="fa-solid fa-user-tie text-xl"></i></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 group-hover:text-white transition-colors relative z-10"></i>
+                </div>
+                <div class="text-xl font-bold text-white mb-1 relative z-10">Find Lawyer</div>
+                <p class="text-xs text-slate-400 relative z-10">Hire legal experts</p>
+            </a>
+
+            <a href="{% url 'my_cases' %}" class="block glass-card p-6 rounded-2xl relative overflow-hidden group border border-yellow-600/30">
+                <div class="absolute inset-0 bg-gradient-to-r from-yellow-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-yellow-500/10 rounded-lg text-yellow-500 relative z-10"><i class="fas fa-gavel text-xl"></i></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 group-hover:text-white transition-colors relative z-10"></i>
+                </div>
+                <div class="text-xl font-bold text-white mb-1 relative z-10">Virtual Court</div>
+                <p class="text-xs text-slate-400 relative z-10">Select a case to view</p>
+            </a>
+
+            <a href="{% url 'chat' %}" class="block glass-card p-6 rounded-2xl relative overflow-hidden group">
+                <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-blue-500/10 rounded-lg text-blue-400 relative z-10"><i class="fa-solid fa-robot text-xl"></i></div>
+                    <i class="fa-solid fa-arrow-right text-slate-500 group-hover:text-white transition-colors relative z-10"></i>
+                </div>
+                <div class="text-xl font-bold text-white mb-1 relative z-10">AI Assistant</div>
+                <p class="text-xs text-slate-400 relative z-10">Legal Q&A</p>
+            </a>
+
+            <div class="glass-card p-6 rounded-2xl">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-3 bg-emerald-500/10 rounded-lg text-emerald-400"><i class="fa-solid fa-folder-open text-xl"></i></div>
+                    <span class="text-xs text-slate-500 bg-white/5 px-2 py-1 rounded">Active</span>
+                </div>
+                <div class="text-3xl font-bold text-white mb-1">{{ request.user.client_requests.count }}</div>
+                <p class="text-xs text-slate-400">Requests</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 glass-panel rounded-2xl overflow-hidden p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-semibold text-white">Your Legal Representatives</h3>
+                    <a href="{% url 'find_lawyer' %}" class="text-xs text-indigo-400 hover:text-indigo-300 font-bold">+ Hire New</a>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="text-xs text-slate-500 uppercase bg-white/5">
+                            <tr>
+                                <th class="px-4 py-3 rounded-l-lg">Lawyer</th>
+                                <th class="px-4 py-3">Case Title</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3 rounded-r-lg text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/5">
+                            {% for req in request.user.client_requests.all %}
+                            <tr class="hover:bg-white/5 transition-colors">
+                                <td class="px-4 py-4 font-medium text-slate-200">Adv. {{ req.lawyer.first_name }}</td>
+                                <td class="px-4 py-4 text-slate-400">{{ req.case_title }}</td>
+                                <td class="px-4 py-4">
+                                    {% if req.status == 'Pending' %}
+                                        <span class="px-2 py-1 bg-yellow-500/10 text-yellow-500 rounded text-xs font-bold">Pending</span>
+                                    {% elif req.status == 'Accepted' %}
+                                        <span class="px-2 py-1 bg-emerald-500/10 text-emerald-500 rounded text-xs font-bold">Active</span>
+                                    {% else %}
+                                        <span class="px-2 py-1 bg-red-500/10 text-red-500 rounded text-xs font-bold">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-4 text-right flex justify-end gap-2">
+                                    {% if req.status == 'Accepted' %}
+                                        <a href="{% url 'case_chat' req.id %}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Chat</a>
+                                        <a href="{% url 'virtual_court_view' req.id %}" class="bg-yellow-600 hover:bg-yellow-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">Court</a>
+                                    {% else %}
+                                        <span class="text-slate-600 text-xs italic">Locked</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-4 py-8 text-center text-slate-500 italic">
+                                    You haven't hired any lawyers yet. <a href="{% url 'find_lawyer' %}" class="text-indigo-400 hover:underline">Find one now.</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-white mb-6">Recent AI Chats</h3>
+                <div class="space-y-4">
+                    {% for session in recent_chats %}
+                    <a href="{% url 'chat' %}?open_session={{ session.id }}" class="block p-4 rounded-xl bg-surface-800 hover:bg-surface-800/80 border border-white/5 hover:border-blue-500/30 transition-all group">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fa-solid fa-message text-blue-500"></i>
+                            <span class="text-sm font-medium text-slate-200 truncate">{{ session.title|default:"New Conversation" }}</span>
+                        </div>
+                        <div class="text-xs text-slate-500 flex justify-between">
+                            <span>{{ session.updated_at|timesince }} ago</span>
+                            <span class="group-hover:translate-x-1 transition-transform text-blue-400">Open &rarr;</span>
+                        </div>
+                    </a>
+                    {% empty %}
+                    <div class="text-center py-8 text-slate-500 text-sm">
+                        <i class="fa-regular fa-comments text-2xl mb-2 opacity-50"></i>
+                        <p>No chat history.</p>
+                        <a href="{% url 'chat' %}" class="text-blue-400 text-xs hover:underline mt-2 inline-block">Start a chat</a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

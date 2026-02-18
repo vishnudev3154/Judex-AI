@@ -1,0 +1,152 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictions | Judex AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { surface: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .prose { color: #cbd5e1; font-size: 0.95rem; line-height: 1.6; }
+        .prose strong { color: #fff; font-weight: 600; }
+        .prose h3 { color: #60a5fa; font-weight: 700; margin-top: 1em; margin-bottom: 0.5em; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .prose li { margin-bottom: 0.25rem; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-surface-950 text-slate-300 font-sans h-screen flex overflow-hidden selection:bg-blue-500/30">
+
+    <aside class="w-64 glass-panel border-r border-white/5 flex flex-col hidden md:flex z-20">
+        <div class="h-20 flex items-center px-8">
+            <span class="text-xl font-bold tracking-tight text-white">JUDEX<span class="text-blue-500">.AI</span></span>
+        </div>
+
+        <nav class="mt-8 px-4 space-y-2">
+            <a href="{% url 'user_dashboard' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-layer-group w-6"></i> <span class="ml-3">Dashboard</span>
+            </a>
+            
+            <a href="{% url 'find_lawyer' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-user-tie w-6"></i> <span class="ml-3">Find Lawyer</span>
+            </a>
+
+            <a href="{% url 'my_cases' %}" class="flex items-center px-4 py-3 text-yellow-500 hover:text-white hover:bg-white/5 rounded-xl transition-all font-medium">
+                <i class="fa-solid fa-gavel w-6"></i> <span class="ml-3">Virtual Court</span>
+            </a>
+
+            <a href="{% url 'chat' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-robot w-6"></i> <span class="ml-3">AI Assistant</span>
+            </a>
+            
+            <a href="{% url 'my_cases' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-file-contract w-6"></i> <span class="ml-3">My Cases</span>
+            </a>
+
+            <a href="{% url 'create_case' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-file-circle-plus w-6"></i> <span class="ml-3">Register Case</span>
+            </a>
+
+            <a href="#" class="flex items-center px-4 py-3 bg-blue-600/10 text-blue-400 rounded-xl border border-blue-500/20 font-medium">
+                <i class="fa-solid fa-scale-balanced w-6"></i> <span class="ml-3">Predictions</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto p-4 border-t border-white/5">
+             <a href="{% url 'logout' %}" class="flex items-center justify-center w-full py-2.5 text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/10">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10 bg-gradient-to-br from-surface-950 to-[#0b1121]">
+        
+        <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+            <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 rounded-full blur-[120px]"></div>
+        </div>
+
+        <header class="mb-8 border-b border-white/5 pb-6">
+            <h1 class="text-3xl font-bold text-white mb-2">Legal Predictions</h1>
+            <p class="text-slate-400">AI-generated judgments and legal analysis for your submitted cases.</p>
+        </header>
+
+        <div class="grid grid-cols-1 gap-8 max-w-5xl">
+            {% for case in predictions %}
+            <div class="glass-panel rounded-2xl p-0 border border-white/5 hover:border-blue-500/30 transition-all overflow-hidden shadow-lg">
+                <div class="p-6 border-b border-white/5 bg-surface-900/30 flex justify-between items-start">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400 ring-1 ring-blue-500/20">
+                            <i class="fa-solid fa-gavel text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-white">{{ case.case_title }}</h3>
+                            <div class="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                                <span>ID: #{{ case.id }}</span>
+                                <span class="w-1 h-1 rounded-full bg-slate-600"></span>
+                                <span>{{ case.created_at|date:"F d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 md:p-8 bg-surface-950/30">
+                    <div class="flex items-center gap-2 mb-4">
+                        <span class="text-xs font-bold text-blue-400 uppercase tracking-widest px-2 py-1 bg-blue-500/10 rounded">
+                            <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> AI Judgment
+                        </span>
+                    </div>
+                    
+                    <div class="prose max-w-none" id="content-{{ case.id }}">
+                        {{ case.analysis_result }}
+                    </div>
+                </div>
+
+                <script>
+                    (function() {
+                        const el = document.getElementById('content-{{ case.id }}');
+                        if (el) {
+                            el.innerHTML = marked.parse(el.textContent);
+                        }
+                    })();
+                </script>
+            </div>
+            {% empty %}
+            <div class="text-center py-20 glass-panel rounded-2xl flex flex-col items-center">
+                <div class="w-20 h-20 bg-surface-800 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                    <i class="fa-solid fa-scale-unbalanced text-slate-600 text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">No Predictions Yet</h3>
+                <p class="text-slate-500 max-w-sm mx-auto mb-8">Submit a case or upload a document via the Chat to generate a legal prediction.</p>
+                <div class="flex gap-4">
+                    <a href="{% url 'create_case' %}" class="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-medium transition-all shadow-lg shadow-blue-900/20">
+                        New Manual Case
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+
+</body>
+</html>

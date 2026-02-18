@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Analysis | Judex AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { 
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'] 
+                    },
+                    colors: { surface: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .legal-text { line-height: 1.8; color: #cbd5e1; }
+    </style>
+</head>
+<body class="bg-surface-950 text-slate-300 font-sans min-h-screen p-6 lg:p-10 flex justify-center">
+
+    <div class="w-full max-w-5xl">
+        
+        <div class="flex justify-between items-center mb-8">
+            <a href="{% url 'user_dashboard' %}" class="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
+            </a>
+            
+            <div class="flex gap-3">
+                
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="lg:col-span-1 space-y-6">
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Case Metadata</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="text-[10px] text-slate-500 uppercase">Case Title</div>
+                            <div class="text-white font-medium">{{ case.case_title }}</div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-[10px] text-slate-500 uppercase">Submission ID</div>
+                            <div class="font-mono text-slate-400 text-sm">#{{ case.id }}</div>
+                        </div>
+
+                        <div>
+                            <div class="text-[10px] text-slate-500 uppercase">Date Submitted</div>
+                            <div class="text-slate-400 text-sm">{{ case.created_at|date:"F d, Y" }}</div>
+                        </div>
+
+                        <div>
+                            <div class="text-[10px] text-slate-500 uppercase">Status</div>
+                            {% if case.is_reviewed %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 mt-1 rounded bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">
+                                    <i class="fa-solid fa-check"></i> Analysis Complete
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 mt-1 rounded bg-yellow-500/10 text-yellow-500 text-xs font-medium border border-yellow-500/20">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> Processing
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="border-t border-white/5 my-6"></div>
+
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Evidence</h3>
+                    
+                    {% if case.document %}
+                        <a href="{{ case.document.url }}" target="_blank" class="flex items-center gap-3 p-3 rounded-xl bg-surface-800 border border-white/5 hover:border-blue-500/30 transition-all group">
+                            <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                                <i class="fa-solid fa-file-contract"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <div class="text-sm text-slate-200 truncate">Attached Document</div>
+                                <div class="text-[10px] text-blue-400 group-hover:underline">Click to view</div>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="p-3 rounded-xl bg-surface-800/50 border border-white/5 text-center">
+                            <span class="text-xs text-slate-600 italic">No document attached</span>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Description</h3>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        {{ case.case_text|default:"No description provided." }}
+                    </p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2">
+                <div class="glass-panel rounded-2xl overflow-hidden min-h-[600px] flex flex-col">
+                    
+                    <div class="px-8 py-6 border-b border-white/5 bg-white/5 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-serif text-white font-medium">Judicial Assessment Report</h2>
+                            <p class="text-xs text-slate-400 mt-1">Generated by Judex AI Engine</p>
+                        </div>
+                        <i class="fa-solid fa-scale-balanced text-3xl text-white/10"></i>
+                    </div>
+
+                    <div class="p-8 flex-1 bg-[#0b1121]">
+                        {% if case.analysis_result %}
+                            <div class="prose prose-invert prose-sm max-w-none legal-text font-serif">
+                                {{ case.analysis_result|linebreaks }}
+                            </div>
+                        {% else %}
+                            <div class="flex flex-col items-center justify-center h-full text-slate-500 space-y-4 opacity-70">
+                                <div class="w-16 h-16 border-4 border-slate-700 border-t-blue-500 rounded-full animate-spin"></div>
+                                <p>Analysis is currently in progress...</p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="px-8 py-4 border-t border-white/5 bg-surface-900/50 text-[10px] text-slate-600 flex justify-between">
+                        <span>CONFIDENTIAL - FOR INFORMATIONAL PURPOSES ONLY</span>
+                        <span>Generated on {{ case.updated_at|date:"M d, Y H:i" }}</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>

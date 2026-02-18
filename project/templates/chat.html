@@ -1,0 +1,265 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Legal Assistant | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #fff; font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        .typing-dot {
+            animation: typing 1.4s infinite ease-in-out both;
+            width: 6px; height: 6px; background-color: #94a3b8; border-radius: 50%; display: inline-block; margin: 0 1px;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden">
+
+    <header class="h-16 bg-slate-900 border-b border-slate-800 flex items-center px-6 justify-between shrink-0 z-20">
+        <div class="flex items-center gap-4">
+            <a href="{% if user.userprofile.is_lawyer %}{% url 'lawyer_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" 
+               class="text-slate-400 hover:text-white transition-colors">
+                <i class="fas fa-arrow-left text-lg"></i>
+            </a>
+            
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-900/50">
+                    <i class="fas fa-robot text-white text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">Judex AI</h1>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider">Online</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <button onclick="clearChat()" class="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1">
+            <i class="fas fa-trash"></i> Clear
+        </button>
+    </header>
+
+    <div id="chat-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 bg-slate-950 relative">
+        
+        <div class="flex flex-col items-start w-full animate-fade-in-up">
+            <div class="flex items-end gap-2 max-w-[85%] md:max-w-[70%]">
+                <div class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mb-1">
+                    <i class="fas fa-robot text-[10px] text-white"></i>
+                </div>
+                <div class="p-4 rounded-2xl rounded-bl-none bg-slate-800 border border-slate-700 text-slate-200 text-sm leading-relaxed shadow-sm">
+                    Hello! I am Judex AI. I can help you with:
+                    <ul class="mt-2 space-y-1 list-disc list-inside text-slate-400 text-xs">
+                        <li>Legal definitions & IPC Sections</li>
+                        <li>Case analysis & summaries</li>
+                        <li>Drafting basic legal documents</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        {% for session in sessions %}
+            {% for msg in session.messages.all %}
+                <div class="flex flex-col w-full {% if msg.is_user %}items-end{% else %}items-start{% endif %}">
+                    <div class="flex items-end gap-2 max-w-[85%] md:max-w-[70%] {% if msg.is_user %}flex-row-reverse{% endif %}">
+                        {% if not msg.is_user %}
+                        <div class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mb-1">
+                            <i class="fas fa-robot text-[10px] text-white"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-3 md:p-4 rounded-2xl text-sm leading-relaxed shadow-sm 
+                            {% if msg.is_user %}
+                                bg-blue-600 text-white rounded-br-none
+                            {% else %}
+                                bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none
+                            {% endif %}">
+                            {{ msg.text|linebreaksbr }}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+    </div>
+
+    <div class="p-4 bg-slate-900 border-t border-slate-800 shrink-0 z-20">
+        <form id="chat-form" onsubmit="sendMessage(event)" class="max-w-4xl mx-auto flex gap-3 items-end">
+            {% csrf_token %}
+            
+            <label class="cursor-pointer text-slate-400 hover:text-blue-400 p-3 bg-slate-800 rounded-full hover:bg-slate-700 transition-colors border border-slate-700 group relative">
+                <i class="fas fa-paperclip text-lg"></i>
+                <input type="file" id="file-input" name="file" class="hidden" onchange="handleFileSelect(this)">
+                <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-800 text-[10px] text-white rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                    Upload Doc/Image
+                </span>
+            </label>
+
+            <div class="flex-1 bg-slate-800 rounded-2xl border border-slate-700 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition-all relative">
+                <input type="text" id="message-input" name="message" 
+                    class="w-full bg-transparent px-4 py-3 text-white placeholder-slate-500 outline-none pr-10" 
+                    placeholder="Ask a legal question..." autocomplete="off">
+                
+                <div id="file-indicator" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-xs text-blue-400 bg-blue-500/10 px-2 py-1 rounded-full items-center gap-1">
+                    <i class="fas fa-file"></i> <span id="file-name" class="max-w-[80px] truncate">file.pdf</span>
+                    <button type="button" onclick="clearFile()" class="hover:text-red-400 ml-1"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+
+            <button type="submit" id="send-btn" class="bg-blue-600 hover:bg-blue-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg shadow-blue-900/30 transition-transform active:scale-95">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const form = document.getElementById('chat-form');
+        const fileInput = document.getElementById('file-input');
+        const fileIndicator = document.getElementById('file-indicator');
+        const fileNameSpan = document.getElementById('file-name');
+        
+        // Auto scroll on load
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                fileNameSpan.textContent = input.files[0].name;
+                fileIndicator.classList.remove('hidden');
+                fileIndicator.classList.add('flex');
+            }
+        }
+
+        function clearFile() {
+            fileInput.value = '';
+            fileIndicator.classList.add('hidden');
+            fileIndicator.classList.remove('flex');
+        }
+
+        function clearChat() {
+            if(confirm('Clear conversation history?')) {
+                // In a real app, you'd send a request to delete sessions
+                window.location.reload(); 
+            }
+        }
+
+        async function sendMessage(e) {
+            e.preventDefault();
+            
+            const messageInput = document.getElementById('message-input');
+            const messageText = messageInput.value.trim();
+            const file = fileInput.files[0];
+
+            if (!messageText && !file) return;
+
+            // 1. Add User Message to UI
+            addMessageToUI('user', messageText, file ? file.name : null);
+            
+            // Clear inputs
+            messageInput.value = '';
+            clearFile();
+
+            // 2. Show Typing Indicator
+            const loadingId = addTypingIndicator();
+
+            // 3. Send to Backend
+            const formData = new FormData();
+            formData.append('message', messageText);
+            if (file) formData.append('file', file);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            try {
+                const response = await fetch("{% url 'chat' %}", {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                // Remove loading
+                document.getElementById(loadingId).remove();
+
+                if (data.error) {
+                    addMessageToUI('ai', "Error: " + data.error);
+                } else {
+                    addMessageToUI('ai', data.reply);
+                }
+
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                addMessageToUI('ai', "System Error: Unable to connect to server.");
+                console.error(error);
+            }
+        }
+
+        function addMessageToUI(role, text, fileName=null) {
+            const isUser = role === 'user';
+            const align = isUser ? 'items-end' : 'items-start';
+            const bubbleColor = isUser ? 'bg-blue-600 text-white rounded-br-none' : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-bl-none';
+            const icon = isUser ? '' : `
+                <div class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mb-1">
+                    <i class="fas fa-robot text-[10px] text-white"></i>
+                </div>`;
+            const flexDirection = isUser ? 'flex-row-reverse' : '';
+
+            let contentHtml = text ? `<p>${text.replace(/\n/g, '<br>')}</p>` : '';
+            if (fileName) {
+                contentHtml += `
+                    <div class="mt-2 flex items-center gap-2 text-xs bg-black/20 p-2 rounded">
+                        <i class="fas fa-file"></i> ${fileName}
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="flex flex-col w-full ${align} animate-fade-in-up">
+                    <div class="flex items-end gap-2 max-w-[85%] md:max-w-[70%] ${flexDirection}">
+                        ${icon}
+                        <div class="p-3 md:p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${bubbleColor}">
+                            ${contentHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            chatContainer.insertAdjacentHTML('beforeend', html);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const id = 'typing-' + Date.now();
+            const html = `
+                <div id="${id}" class="flex flex-col w-full items-start animate-fade-in-up">
+                    <div class="flex items-end gap-2">
+                        <div class="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center shrink-0 mb-1">
+                            <i class="fas fa-robot text-[10px] text-white"></i>
+                        </div>
+                        <div class="p-3 rounded-2xl rounded-bl-none bg-slate-800 border border-slate-700">
+                            <div class="flex gap-1">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            chatContainer.insertAdjacentHTML('beforeend', html);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            return id;
+        }
+    </script>
+    <style>
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
+    </style>
+</body>
+</html>

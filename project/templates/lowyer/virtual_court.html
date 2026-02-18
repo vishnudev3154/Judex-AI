@@ -1,0 +1,376 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Virtual Courtroom | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #fff; font-family: 'Inter', sans-serif; }
+        
+        /* Custom Textures */
+        .wood-texture {
+            background: linear-gradient(rgba(30, 15, 0, 0.8), rgba(30, 15, 0, 0.8)), url('https://www.transparenttextures.com/patterns/wood-pattern.png');
+            border-bottom: 4px solid #4a3b2a;
+        }
+        
+        /* Glass Panels */
+        .glass-panel { background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(10px); }
+        .glass-panel-left { border-right: 1px solid rgba(255,255,255,0.1); }
+        .glass-panel-right { border-left: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+
+        /* Animations */
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-fade-in-up { animation: fadeInUp 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <div class="w-72 glass-panel glass-panel-left flex flex-col p-6 z-30 shadow-xl hidden md:flex">
+        <div class="mb-8">
+            <h1 class="text-xl font-bold text-yellow-500"><i class="fas fa-scale-balanced mr-2"></i>Virtual Court</h1>
+            <p class="text-xs text-slate-400 mt-1">AI-Powered Simulation</p>
+            {% if not is_lawyer %}
+                <span class="inline-block mt-2 bg-blue-500/20 text-blue-400 text-[10px] font-bold px-2 py-1 rounded border border-blue-500/30">SPECTATOR MODE</span>
+            {% endif %}
+        </div>
+
+        {% if court.title %}
+        <div class="flex-1 overflow-y-auto">
+            <div class="mb-6">
+                <h3 class="text-xs uppercase text-slate-500 font-bold mb-2">Case Title</h3>
+                <p class="text-white font-semibold text-sm">{{ court.title }}</p>
+            </div>
+            
+            <div class="mb-6">
+                <h3 class="text-xs uppercase text-slate-500 font-bold mb-2">Context</h3>
+                <div class="text-xs text-slate-300 bg-slate-800 p-3 rounded-lg border border-white/5 max-h-40 overflow-y-auto">
+                    {{ court.description }}
+                </div>
+            </div>
+
+            {% if court.evidence_text %}
+            <div class="mb-6">
+                <h3 class="text-xs uppercase text-slate-500 font-bold mb-2">Evidence</h3>
+                <div class="flex items-center gap-2 text-blue-400 bg-blue-500/10 p-3 rounded-lg border border-blue-500/20">
+                    <i class="fas fa-file-pdf"></i>
+                    <span class="text-xs">Document Loaded</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if is_lawyer %}
+        <div class="mt-4 border-t border-white/10 pt-4 space-y-3">
+            
+            <form action="{% url 'share_court_transcript' legal_case.id %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-xs text-white font-bold transition-colors shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-file-export"></i> Forward Transcript to Client
+                </button>
+            </form>
+
+            <form method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="update_details" value="true">
+                <button type="button" onclick="document.getElementById('setup-modal').classList.remove('hidden')" class="w-full py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs text-white transition-colors flex items-center justify-center gap-2">
+                    <i class="fas fa-refresh"></i> Reset Simulation
+                </button>
+            </form>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="flex-1 flex items-center justify-center text-slate-500 text-center text-sm">
+            {% if is_lawyer %}
+                <p>Initialize the case<br>to start session.</p>
+                <button onclick="document.getElementById('setup-modal').classList.remove('hidden')" class="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs rounded-lg">Initialize</button>
+            {% else %}
+                <p>Waiting for lawyer...</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="flex-1 flex flex-col relative min-w-0">
+        
+        <div class="h-1/5 wood-texture relative flex flex-col items-center justify-center shadow-2xl z-20 shrink-0">
+            <a href="{% if user.userprofile.is_lawyer %}{% url 'lawyer_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" 
+               class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors text-sm font-medium">
+                <i class="fas fa-sign-out-alt mr-1"></i> Exit
+            </a>
+
+            {% if is_lawyer %}
+            <button onclick="showFinalVerdict()" id="btn-verdict" class="hidden absolute top-4 left-4 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg border border-yellow-400 animate-pulse">
+                <i class="fas fa-gavel mr-1"></i> CALL VERDICT
+            </button>
+            {% endif %}
+
+            <div class="w-16 h-16 rounded-full bg-slate-800 border-4 border-yellow-600 flex items-center justify-center shadow-lg relative mb-2">
+                <i class="fas fa-gavel text-2xl text-yellow-500"></i>
+                <div id="judge-status" class="absolute -bottom-2 bg-slate-900 text-[9px] px-2 py-0.5 rounded-full border border-yellow-600 text-yellow-500 whitespace-nowrap">
+                    Presiding
+                </div>
+            </div>
+
+            <div class="w-1/2 max-w-xl bg-black/40 h-3 rounded-full relative overflow-hidden border border-white/10">
+                <div id="verdict-bar" class="h-full bg-yellow-500 transition-all duration-1000" style="width: {{ court.current_score|default:50 }}%"></div>
+            </div>
+            <div class="flex justify-between w-1/2 max-w-xl text-[9px] text-slate-400 mt-1 uppercase font-bold">
+                <span>Innocent</span>
+                <span>Guilty</span>
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden relative bg-slate-900">
+            <div class="flex-1 overflow-y-auto p-6 space-y-6" id="court-log">
+                <div class="text-center text-slate-500 text-xs italic py-2 border-b border-slate-800 mb-4">
+                    Court Session Active • {{ court.title|default:"No Case Loaded" }}
+                </div>
+
+                {% for log in logs %}
+                    <div class="flex flex-col items-end w-full animate-fade-in-up">
+                        <span class="text-[9px] uppercase text-slate-400 mb-1 px-1 font-bold">Prosecution</span>
+                        <div class="max-w-[85%] p-3 rounded-2xl rounded-tr-none border bg-red-900/20 border-red-500/30 text-slate-200 text-sm leading-relaxed shadow-md">
+                            {{ log.prosecutor_arg }}
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-start w-full animate-fade-in-up">
+                        <span class="text-[9px] uppercase text-slate-400 mb-1 px-1 font-bold">Defense</span>
+                        <div class="max-w-[85%] p-3 rounded-2xl rounded-tl-none border bg-blue-900/20 border-blue-500/30 text-slate-200 text-sm leading-relaxed shadow-md">
+                            {{ log.defense_arg }}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="bg-slate-950 border-t border-slate-800 p-4 z-30">
+                <div class="max-w-4xl mx-auto flex gap-3">
+                    {% if is_lawyer %}
+                        <input type="text" id="user-argument" 
+                            class="flex-1 bg-slate-800 border border-slate-600 rounded-full px-5 py-3 text-sm text-white focus:border-red-500 outline-none transition-all placeholder-slate-500" 
+                            placeholder="Type your argument..." autocomplete="off"
+                            onkeypress="if(event.key === 'Enter') submitArgument()">
+                        
+                        <button onclick="submitArgument()" id="btn-submit" class="bg-red-600 hover:bg-red-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-transform active:scale-95">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    {% else %}
+                        <div class="flex-1 bg-slate-900 border border-slate-700 rounded-full px-6 py-3 text-slate-500 text-center italic text-sm">
+                            <i class="fas fa-lock mr-2"></i> Spectator Mode
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="w-80 glass-panel glass-panel-right flex flex-col z-30 shadow-xl bg-slate-950/50 hidden md:flex">
+        <div class="p-4 border-b border-white/10 flex items-center justify-between bg-slate-900/80">
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                <i class="fas fa-comments text-indigo-400"></i> Client Comms
+            </h2>
+            <div class="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="Live"></div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-900/30" id="client-chat-log">
+            <div class="text-center text-[10px] text-slate-500 italic mb-2">Encrypted Channel</div>
+            </div>
+
+        <div class="p-3 border-t border-white/10 bg-slate-900">
+            <div class="relative">
+                <input type="text" id="client-msg-input" 
+                    class="w-full bg-slate-800 border border-slate-700 rounded-lg pl-3 pr-10 py-2 text-xs text-white focus:border-indigo-500 outline-none" 
+                    placeholder="Message client..." 
+                    onkeypress="if(event.key === 'Enter') sendClientMessage()">
+                <button onclick="sendClientMessage()" class="absolute right-2 top-1.5 text-indigo-400 hover:text-white">
+                    <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="setup-modal" class="{% if court.title %}hidden{% endif %} fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md">
+        <div class="bg-slate-900 border border-slate-700 p-8 rounded-2xl max-w-lg w-full shadow-2xl relative">
+            {% if court.title %}
+            <button onclick="document.getElementById('setup-modal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-500 hover:text-white">
+                <i class="fas fa-times"></i>
+            </button>
+            {% endif %}
+            
+            <div class="text-center mb-6">
+                <i class="fas fa-file-contract text-4xl text-blue-500 mb-2"></i>
+                <h2 class="text-2xl font-bold text-white">Initialize Case</h2>
+                <p class="text-slate-400 text-sm">Provide details to calibrate the AI Judge.</p>
+            </div>
+
+            {% if is_lawyer %}
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="update_details" value="true">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Case Title</label>
+                        <input type="text" name="case_title" value="{{ legal_case.case_title }}" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-blue-500 outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Case Description</label>
+                        <textarea name="case_desc" required rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-blue-500 outline-none">{{ legal_case.case_description }}</textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs uppercase text-slate-500 font-bold mb-1">Upload Evidence (PDF)</label>
+                        <input type="file" name="case_file" accept=".pdf" class="w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full mt-6 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-xl transition-all">
+                    Start Session
+                </button>
+            </form>
+            {% else %}
+                <p class="text-center text-red-400">Waiting for Lawyer initialization...</p>
+                <a href="{% url 'user_dashboard' %}" class="block text-center mt-4 text-slate-400 hover:underline">Back to Dashboard</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div id="judgment-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-yellow-600/30 p-8 rounded-2xl max-w-lg w-full text-center shadow-2xl">
+            <i class="fas fa-gavel text-6xl text-yellow-500 mb-4 animate-bounce"></i>
+            <h2 class="text-3xl font-serif text-white mb-2">Final Judgment</h2>
+            
+            <div class="bg-black/30 p-4 rounded-lg my-6 border border-white/5">
+                <p class="text-slate-400 text-xs uppercase mb-1">Current Standing</p>
+                <p id="modal-verdict" class="text-2xl font-bold text-white">--</p>
+                <div class="h-1 w-full bg-slate-700 mt-2 rounded-full overflow-hidden">
+                    <div id="modal-bar" class="h-full bg-yellow-500" style="width: 50%"></div>
+                </div>
+            </div>
+            <p id="modal-reasoning" class="text-sm text-slate-300 italic mb-6">...</p>
+            <div class="flex gap-4 justify-center">
+                <button onclick="document.getElementById('judgment-modal').classList.add('hidden')" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold rounded-full">Continue</button>
+                <a href="{% if user.userprofile.is_lawyer %}{% url 'lawyer_dashboard' %}{% else %}{% url 'user_dashboard' %}{% endif %}" class="px-6 py-2 bg-white text-black font-bold rounded-full hover:bg-slate-200">Close</a>
+            </div>
+        </div>
+    </div>
+
+    {% if is_lawyer %}
+    <script>
+        // --- VIRTUAL COURT LOGIC ---
+        let latestVerdictData = { verdict: "Pending", reasoning: "None", score: 50 };
+
+        function submitArgument() {
+            const inputField = document.getElementById('user-argument');
+            const argument = inputField.value.trim();
+            if(!argument) return;
+
+            addLogEntry('Prosecution', argument);
+            inputField.value = ''; 
+            document.getElementById('btn-submit').disabled = true;
+            const typingId = addTypingIndicator();
+
+            fetch("{% url 'virtual_court_view' legal_case.id %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-Requested-With": "XMLHttpRequest", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ argument: argument })
+            })
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById(typingId).remove();
+                addLogEntry('Defense', data.defense_argument);
+                updateJudgeMeter(data.score);
+                latestVerdictData = data;
+                document.getElementById('btn-verdict').classList.remove('hidden');
+            })
+            .catch(err => { document.getElementById(typingId).innerHTML = "Error processing request."; })
+            .finally(() => { 
+                document.getElementById('btn-submit').disabled = false;
+                inputField.focus();
+            });
+        }
+
+        function addLogEntry(role, text) {
+            const log = document.getElementById('court-log');
+            const align = role === 'Prosecution' ? 'items-end' : 'items-start';
+            const bgClass = role === 'Prosecution' ? 'bg-red-900/20 border-red-500/30 rounded-tr-none' : 'bg-blue-900/20 border-blue-500/30 rounded-tl-none';
+            log.insertAdjacentHTML('beforeend', `<div class="flex flex-col ${align} w-full animate-fade-in-up"><span class="text-[9px] uppercase text-slate-400 mb-1 px-1 font-bold">${role}</span><div class="max-w-[85%] p-3 rounded-2xl border ${bgClass} text-slate-200 text-sm leading-relaxed shadow-md">${text}</div></div>`);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const log = document.getElementById('court-log');
+            const id = 'typing-' + Date.now();
+            log.insertAdjacentHTML('beforeend', `<div id="${id}" class="flex flex-col items-start w-full animate-fade-in-up"><div class="p-3 rounded-2xl bg-slate-800 border border-slate-700 text-slate-500 text-xs italic"><i class="fas fa-circle-notch fa-spin mr-2"></i> Analyzing...</div></div>`);
+            log.scrollTop = log.scrollHeight;
+            return id;
+        }
+
+        function updateJudgeMeter(score) {
+            const bar = document.getElementById('verdict-bar');
+            bar.style.width = score + "%";
+            bar.className = `h-full transition-all duration-1000 ${score > 50 ? 'bg-red-500' : 'bg-blue-500'}`;
+            const status = document.getElementById('judge-status');
+            status.innerText = score > 60 ? "Leaning Guilty" : (score < 40 ? "Leaning Innocent" : "Undecided");
+        }
+
+        function showFinalVerdict() {
+            document.getElementById('modal-verdict').innerText = latestVerdictData.verdict || "Pending";
+            document.getElementById('modal-reasoning').innerText = latestVerdictData.judicial_reasoning;
+            const bar = document.getElementById('modal-bar');
+            bar.style.width = latestVerdictData.score + "%";
+            bar.className = `h-full ${latestVerdictData.score > 50 ? 'bg-red-500' : 'bg-blue-500'}`;
+            document.getElementById('judgment-modal').classList.remove('hidden');
+        }
+
+        // --- CLIENT CHAT LOGIC ---
+        function loadClientMessages() {
+            fetch("{% url 'api_get_case_messages' legal_case.id %}")
+            .then(res => res.json())
+            .then(data => {
+                const chatLog = document.getElementById('client-chat-log');
+                chatLog.innerHTML = '<div class="text-center text-[10px] text-slate-500 italic mb-2">Encrypted Channel</div>'; 
+                data.messages.forEach(msg => {
+                    const align = msg.is_me ? 'items-end' : 'items-start';
+                    const bg = msg.is_me ? 'bg-indigo-600 text-white' : 'bg-slate-700 text-slate-200';
+                    chatLog.insertAdjacentHTML('beforeend', `
+                        <div class="flex flex-col ${align} animate-fade-in-up">
+                            <div class="max-w-[90%] px-3 py-2 rounded-lg ${bg} text-xs shadow-sm">${msg.text}</div>
+                            <span class="text-[9px] text-slate-600 mt-0.5">${msg.sender} • ${msg.time}</span>
+                        </div>`);
+                });
+            });
+        }
+
+        function sendClientMessage() {
+            const input = document.getElementById('client-msg-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            fetch("{% url 'api_send_case_message' legal_case.id %}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ message: text })
+            }).then(res => { if(res.ok) { input.value = ''; loadClientMessages(); } });
+        }
+
+        // Auto-refresh chat every 4 seconds
+        setInterval(loadClientMessages, 4000);
+        loadClientMessages(); // Initial Load
+    </script>
+    {% else %}
+    <script>
+        setTimeout(() => window.location.reload(), 10000); // Auto-refresh for spectators every 10s
+    </script>
+    {% endif %}
+</body>
+</html>

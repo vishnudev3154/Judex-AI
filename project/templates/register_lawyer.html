@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Lawyer Registration | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background: url("{% static 'image/register_bg.png' %}") no-repeat center center fixed;
+            background-size: cover;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="font-sans text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="fixed inset-0 bg-black/60 -z-10"></div>
+
+    <div class="glass-card w-full max-w-lg p-8 rounded-3xl text-center relative z-10 shadow-2xl">
+        
+        <div class="mb-4"><i class="fas fa-gavel text-5xl text-indigo-400"></i></div>
+
+        <div class="flex bg-black/30 p-1 rounded-full mb-8 border border-white/10">
+            <div class="w-1/2">
+                <a href="{% url 'register_client' %}" class="block w-full py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 font-medium text-sm">
+                    <i class="fas fa-user mr-1"></i> Client
+                </a>
+            </div>
+            <div class="w-1/2">
+                <button class="w-full py-2 rounded-full bg-indigo-600 text-white font-bold shadow-lg text-sm">
+                    <i class="fas fa-briefcase mr-1"></i> Lawyer
+                </button>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-bold mb-6">Create Lawyer Account</h2>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-3 mb-4 rounded bg-red-500/20 border border-red-500/50 text-red-200 text-sm">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" class="space-y-4 text-left">
+            {% csrf_token %}
+
+            <div>
+                <label class="text-sm ml-3 text-slate-300">Legal Full Name</label>
+                <input type="text" name="fullname" class="w-full bg-black/30 border border-white/20 rounded-full px-5 py-3 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+
+            <div>
+                <label class="text-sm ml-3 text-slate-300">Bar Council ID / License</label>
+                <div class="relative">
+                    <input type="text" name="bar_id" placeholder="e.g. KAR/1234/2024" class="w-full bg-black/30 border border-white/20 rounded-full px-5 py-3 focus:border-indigo-500 focus:outline-none" required>
+                    <i class="fas fa-id-card absolute right-5 top-3.5 text-slate-500"></i>
+                </div>
+            </div>
+
+            <div>
+                <label class="text-sm ml-3 text-slate-300">Email Address</label>
+                <input type="email" name="email" class="w-full bg-black/30 border border-white/20 rounded-full px-5 py-3 focus:border-indigo-500 focus:outline-none" required>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm ml-3 text-slate-300">Password</label>
+                    <input type="password" name="password" class="w-full bg-black/30 border border-white/20 rounded-full px-5 py-3 focus:border-indigo-500 focus:outline-none" required>
+                </div>
+                <div>
+                    <label class="text-sm ml-3 text-slate-300">Confirm</label>
+                    <input type="password" name="confirm_password" class="w-full bg-black/30 border border-white/20 rounded-full px-5 py-3 focus:border-indigo-500 focus:outline-none" required>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full mt-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3.5 rounded-full transition-all">
+                Register as Lawyer
+            </button>
+        </form>
+        
+        <p class="mt-6 text-sm text-slate-400">Already registered? <a href="{% url 'login' %}" class="text-white font-bold underline">Login here</a></p>
+    </div>
+</body>
+</html>

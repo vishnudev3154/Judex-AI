@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Judex AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { surface: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .stat-card { transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-3px); border-color: rgba(59, 130, 246, 0.4); }
+    </style>
+</head>
+<body class="bg-surface-950 text-slate-300 font-sans h-screen flex overflow-hidden">
+
+    <aside class="w-64 glass-panel border-r border-white/5 hidden md:flex flex-col z-20">
+        <div class="h-20 flex items-center px-8 border-b border-white/5">
+            <span class="text-xl font-bold tracking-tight text-white">JUDEX<span class="text-red-500">.ADMIN</span></span>
+        </div>
+
+        <nav class="mt-6 px-4 space-y-2">
+            <a href="#" class="flex items-center px-4 py-3 bg-red-600/10 text-red-400 rounded-xl border border-red-500/20 font-medium">
+                <i class="fa-solid fa-chart-line w-6"></i> System Overview
+            </a>
+            
+            <a href="{% url 'manage_users' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-users-gear w-6"></i> User Management
+            </a>
+            
+            <a href="{% url 'all_cases' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-gavel w-6"></i> All Case Files
+            </a>
+        </nav>
+
+        <div class="mt-auto p-4 border-t border-white/5">
+             <a href="{% url 'logout' %}" class="flex items-center justify-center w-full py-2.5 text-xs font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg transition-colors border border-red-500/10">
+                <i class="fa-solid fa-arrow-right-from-bracket mr-2"></i> Admin Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 lg:p-10 relative z-10 bg-[#0b1121]">
+        
+        <header class="flex justify-between items-end mb-10">
+            <div>
+                <h1 class="text-2xl font-bold text-white mb-1">System Overview</h1>
+                <p class="text-slate-400 text-sm">Monitoring AI Analysis & User Activity</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-xs text-emerald-400 font-medium">AI Engine Online</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+            <div class="glass-panel p-6 rounded-2xl stat-card border border-white/5">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-blue-500/10 rounded-lg text-blue-400"><i class="fa-solid fa-folder-tree"></i></div>
+                </div>
+                <div class="text-3xl font-bold text-white mb-1">{{ total_cases }}</div>
+                <p class="text-xs text-slate-500">Total Cases Submitted</p>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl stat-card border border-white/5">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-yellow-500/10 rounded-lg text-yellow-500"><i class="fa-solid fa-clock"></i></div>
+                </div>
+                <div class="text-3xl font-bold text-white mb-1">{{ pending_cases }}</div>
+                <p class="text-xs text-slate-500">Pending AI Analysis</p>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl stat-card border border-white/5">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-400"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+                </div>
+                <div class="text-3xl font-bold text-white mb-1">{{ analyzed_cases }}</div>
+                <p class="text-xs text-slate-500">Analyzed Successfully</p>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl stat-card border border-white/5">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="p-2 bg-purple-500/10 rounded-lg text-purple-400"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <div class="text-3xl font-bold text-white mb-1">{{ total_users }}</div>
+                <p class="text-xs text-slate-500">Registered Clients</p>
+            </div>
+        </div>
+
+        <div class="glass-panel rounded-2xl overflow-hidden border border-white/5">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-white">Latest Case Activity</h3>
+                </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs text-slate-500 uppercase bg-surface-900/50">
+                        <tr>
+                            <th class="px-6 py-4 font-semibold">Case Title</th>
+                            <th class="px-6 py-4 font-semibold">User</th>
+                            <th class="px-6 py-4 font-semibold">Submitted On</th>
+                            <th class="px-6 py-4 font-semibold">Attachment</th>
+                            <th class="px-6 py-4 font-semibold">AI Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for case in recent_cases %}
+                        <tr class="hover:bg-white/5 transition-colors">
+                            <td class="px-6 py-4 font-medium text-slate-200">
+                                {{ case.case_title|truncatechars:30 }}
+                                <div class="text-[10px] text-slate-500">ID: #{{ case.id }}</div>
+                            </td>
+                            <td class="px-6 py-4 text-slate-400">
+                                {{ case.user.username }}
+                            </td>
+                            <td class="px-6 py-4 text-slate-500">
+                                {{ case.created_at|date:"M d, H:i" }}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if case.document %}
+                                <span class="text-xs bg-blue-500/10 text-blue-400 px-2 py-1 rounded border border-blue-500/20">
+                                    <i class="fa-solid fa-paperclip mr-1"></i> File
+                                </span>
+                                {% else %}
+                                <span class="text-xs text-slate-600">No File</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if case.is_reviewed %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-medium border border-emerald-500/20">
+                                    <i class="fa-solid fa-check"></i> Complete
+                                </span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-xs font-medium border border-yellow-500/20">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse"></span> Processing
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-slate-500">No cases found in the system.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</body>
+</html>

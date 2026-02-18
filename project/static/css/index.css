@@ -1,0 +1,103 @@
+:root {
+    --glass-bg: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.2);
+    --glass-blur: blur(12px);
+    --primary-glow: linear-gradient(to right, #4e54c8, #8f94fb);
+    --secondary-glow: rgba(89, 149, 253, 0.3);
+}
+
+body {
+    background: url("../image/indexbg.png") no-repeat center center fixed;
+    background-size: cover;
+    color: #fff;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Navbar */
+.navbar-custom {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+/* Hero */
+.hero {
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    padding-top: 100px;
+}
+
+.hero-card {
+    background: rgba(0,0,0,0.25);
+    padding: 40px;
+    border-radius: 20px;
+    backdrop-filter: blur(6px);
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    background: linear-gradient(to right, #fff, #a5c7ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    color: rgba(255,255,255,0.85);
+}
+
+/* Glass Panel */
+.glass-panel {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 30px;
+    height: 100%;
+}
+
+/* Buttons */
+.btn-glow-primary {
+    background: var(--primary-glow);
+    border: none;
+    color: #fff;
+    font-weight: 600;
+    padding: 12px 30px;
+}
+
+.btn-glow-secondary {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    color: #fff;
+    padding: 12px 30px;
+}
+
+/* Features */
+.feature-box {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+
+.feature-icon {
+    font-size: 2rem;
+    color: #8f94fb;
+    margin-bottom: 15px;
+}
+
+/* Footer */
+.footer-custom {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    border-top: 1px solid var(--glass-border);
+    color: rgba(255,255,255,0.6);
+}
+
+.section-title {
+    text-shadow: 0 0 20px rgba(143,148,251,0.7);
+}

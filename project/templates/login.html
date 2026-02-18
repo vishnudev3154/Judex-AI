@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: url("{% static 'image/login.png' %}") no-repeat center center fixed; background-size: cover; }
+        .bg-overlay { position: fixed; inset: 0; background: rgba(2, 6, 23, 0.6); z-index: -1; }
+        .glass-card { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .text-gradient { background: linear-gradient(to right, #4e54c8, #8f94fb); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    </style>
+</head>
+<body class="font-sans text-white min-h-screen flex items-center justify-center p-4">
+    <div class="bg-overlay"></div>
+
+    <div class="glass-card w-full max-w-md p-8 rounded-[2.5rem] text-center relative z-10 shadow-2xl">
+        <div class="mb-6"><i class="fas fa-scale-balanced text-5xl text-gradient"></i></div>
+
+        <div class="flex bg-black/40 p-1.5 rounded-full mb-8 border border-white/10">
+            <div class="w-1/2">
+                <button class="w-full py-2.5 rounded-full bg-indigo-600 text-white font-bold shadow-lg text-sm">
+                    <i class="fas fa-user mr-2"></i>Client
+                </button>
+            </div>
+            <div class="w-1/2">
+                <a href="{% url 'lawyer_login' %}" class="block w-full py-2.5 rounded-full text-slate-400 hover:text-white transition-all font-medium text-sm">
+                    <i class="fas fa-briefcase mr-2"></i>Lawyer
+                </a>
+            </div>
+        </div>
+
+        <h2 class="text-3xl font-bold mb-2">Welcome Back</h2>
+        <p class="text-slate-400 text-sm mb-8 font-medium tracking-wide">JUDICIAL INTELLIGENCE PORTAL</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-2xl text-sm font-bold bg-red-500/20 text-red-200 border border-red-500/30">
+                    <i class="fas fa-triangle-exclamation mr-2"></i> {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" class="text-left space-y-5">
+            {% csrf_token %}
+            <div>
+                <label class="block text-slate-400 text-[10px] uppercase font-black tracking-widest ml-5 mb-2">Username</label>
+                <input type="text" name="username" class="w-full bg-black/40 border border-white/10 rounded-full px-6 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" placeholder="Enter your ID" required>
+            </div>
+            <div>
+                <label class="block text-slate-400 text-[10px] uppercase font-black tracking-widest ml-5 mb-2">Password</label>
+                <input type="password" name="password" class="w-full bg-black/40 border border-white/10 rounded-full px-6 py-4 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-black py-4 rounded-full shadow-lg shadow-indigo-600/30 transition-all transform active:scale-95 uppercase tracking-widest text-xs">
+                Access Dashboard
+            </button>
+        </form>
+
+        <div class="mt-8 pt-6 border-t border-white/10">
+            <p class="text-slate-500 text-sm">New here? <a href="{% url 'register' %}" class="text-white font-bold hover:text-indigo-400 transition-colors">Create Account</a></p>
+            <a href="{% url 'home' %}" class="inline-block mt-4 text-slate-500 text-xs hover:text-white transition-all"><i class="fas fa-arrow-left mr-1"></i> Back to Judex.AI</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Case Repository | Judex Admin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { surface: { 800: '#1e293b', 900: '#0f172a', 950: '#020617' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .title-glow { text-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-surface-950 text-slate-300 font-sans h-screen flex overflow-hidden selection:bg-red-500/30">
+
+    <aside class="w-64 glass-panel border-r border-white/5 hidden md:flex flex-col z-20">
+        <div class="h-20 flex items-center px-8 border-b border-white/5">
+            <span class="text-xl font-bold tracking-tight text-white uppercase italic">JUDEX<span class="text-red-600">.CONTROL</span></span>
+        </div>
+
+        <nav class="mt-8 px-4 space-y-2">
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4 px-4">Core Management</p>
+            <a href="{% url 'admin_dashboard' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-chart-line w-6 text-center"></i> <span class="ml-2">System Overview</span>
+            </a>
+            <a href="{% url 'manage_users' %}" class="flex items-center px-4 py-3 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                <i class="fa-solid fa-users-gear w-6 text-center"></i> <span class="ml-2">User Management</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 bg-red-600/10 text-red-400 rounded-xl border border-red-500/20 font-medium">
+                <i class="fa-solid fa-gavel w-6 text-center"></i> <span class="ml-2">Global Case Files</span>
+            </a>
+        </nav>
+
+        <div class="mt-auto p-6 border-t border-white/5">
+             <div class="mb-4 flex items-center gap-3">
+                 <div class="w-8 h-8 rounded-lg bg-red-600/20 flex items-center justify-center text-red-500">
+                     <i class="fas fa-user-shield text-xs"></i>
+                 </div>
+                 <div class="text-[10px] uppercase font-bold tracking-tighter text-slate-400">Security Clearance: LEVEL 1</div>
+             </div>
+             <a href="{% url 'logout' %}" class="flex items-center justify-center w-full py-3 text-xs font-bold uppercase tracking-widest text-white bg-red-600 hover:bg-red-500 rounded-xl transition-all shadow-lg shadow-red-900/20">
+                Log Out Terminal
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 overflow-y-auto p-6 lg:p-12 relative z-10 bg-[#020617]">
+        
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-2">
+                    <span class="w-2 h-2 rounded-full bg-red-600 animate-pulse"></span>
+                    <span class="text-[10px] font-black text-red-500 uppercase tracking-widest">Admin Authorization Required</span>
+                </div>
+                <h1 class="text-4xl font-black text-white title-glow uppercase tracking-tight leading-none">Global Case <span class="text-red-600">Repository</span></h1>
+                <p class="text-slate-500 text-sm mt-3 font-medium">Monitoring and auditing all legal submissions within the Judex ecosystem.</p>
+            </div>
+            
+            <div class="flex gap-4">
+                <div class="glass-panel px-6 py-3 rounded-2xl flex flex-col items-center justify-center bg-white/5 border-white/10">
+                    <span class="text-[10px] text-slate-500 uppercase font-black">Total Submissions</span>
+                    <span class="text-2xl font-bold text-white">{{ total_cases }}</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="glass-panel rounded-3xl overflow-hidden border border-white/5 shadow-2xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left border-collapse">
+                    <thead class="text-[10px] text-slate-500 uppercase tracking-[0.2em] bg-surface-900/80 border-b border-white/10">
+                        <tr>
+                            <th class="px-8 py-5 font-black">Case Reference</th>
+                            <th class="px-8 py-5 font-black">Submitted By</th>
+                            <th class="px-8 py-5 font-black">AI Analysis</th>
+                            <th class="px-8 py-5 font-black">Resolution</th> <th class="px-8 py-5 font-black text-right">Data Logs</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-white/5">
+                        {% for case in cases %}
+                        <tr class="hover:bg-red-600/5 transition-all group">
+                            <td class="px-8 py-6">
+                                <div class="flex items-center gap-4">
+                                    <div class="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center text-red-500 group-hover:bg-red-600 group-hover:text-white transition-colors border border-red-500/20">
+                                        <i class="fa-solid fa-file-shield"></i>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-200 group-hover:text-white">{{ case.case_title|truncatechars:35 }}</p>
+                                        <p class="text-[10px] text-slate-600">REF: #{{ case.id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <td class="px-8 py-6">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-400 border border-white/10">
+                                        {{ case.user.username|slice:":1"|upper }}
+                                    </div>
+                                    <span class="text-slate-400 font-medium">{{ case.user.username }}</span>
+                                </div>
+                            </td>
+                            
+                            <td class="px-8 py-6">
+                                {% if case.is_reviewed %}
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        Complete
+                                    </span>
+                                {% else %}
+                                    <span class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-yellow-500/10 text-yellow-500 border border-yellow-500/20">
+                                        Pending
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-8 py-6">
+                                {% if case.is_solved %}
+                                    <div class="flex items-center gap-2 text-emerald-400 font-bold text-[10px] uppercase tracking-tighter">
+                                        <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
+                                        Solved
+                                    </div>
+                                {% else %}
+                                    <div class="flex items-center gap-2 text-slate-500 font-bold text-[10px] uppercase tracking-tighter">
+                                        <div class="w-2 h-2 rounded-full bg-slate-700"></div>
+                                        Active
+                                    </div>
+                                {% endif %}
+                            </td>
+
+                            <td class="px-8 py-6 text-right">
+                                {% if case.document %}
+                                    <a href="{{ case.document.url }}" target="_blank" class="inline-flex items-center gap-2 text-red-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-tighter">
+                                        <i class="fa-solid fa-download"></i> Retrieve
+                                    </a>
+                                {% else %}
+                                    <span class="text-slate-700 text-xs italic">Void</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

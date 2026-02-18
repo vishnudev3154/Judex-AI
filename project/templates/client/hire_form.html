@@ -1,0 +1,57 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hire Lawyer | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { background-color: #0f172a; color: #fff; }</style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6">
+
+    <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl w-full max-w-lg shadow-2xl relative">
+        
+        <a href="{% url 'find_lawyer' %}" class="absolute top-6 right-6 text-slate-500 hover:text-white">
+            <i class="fas fa-times text-xl"></i>
+        </a>
+
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-12 h-12 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-lg">
+                {{ lawyer.user.first_name|slice:":1" }}
+            </div>
+            <div>
+                <h2 class="text-xl font-bold text-white">Hire Adv. {{ lawyer.fullname }}</h2>
+                <p class="text-slate-400 text-xs">Send your case details securely</p>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-slate-300 text-sm font-medium mb-2">Case Title</label>
+                <input type="text" name="title" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition-colors" placeholder="e.g. Property Dispute vs Neighbor" required>
+            </div>
+
+            <div>
+                <label class="block text-slate-300 text-sm font-medium mb-2">Case Description</label>
+                <textarea name="description" rows="4" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition-colors" placeholder="Briefly describe the incident..." required></textarea>
+            </div>
+
+            <div>
+                <label class="block text-slate-300 text-sm font-medium mb-2">Upload FIR / Evidence</label>
+                <div class="border-2 border-dashed border-slate-700 rounded-lg p-6 text-center hover:border-indigo-500 transition-colors">
+                    <input type="file" name="fir" class="w-full bg-transparent text-slate-400 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                    <p class="text-xs text-slate-600 mt-2">PDF, JPG, or PNG allowed</p>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-lg font-bold mt-2 shadow-lg hover:shadow-indigo-500/20 transition-all">
+                Send Request
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

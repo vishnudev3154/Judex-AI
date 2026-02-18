@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Lawyers | Judex AI</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background-color: #0f172a; color: #fff; }
+        .glass-panel { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    </style>
+</head>
+<body class="min-h-screen p-8 bg-[#0f172a]">
+
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold">Legal Representation Status</h1>
+                <p class="text-slate-400">Track your requests and communicate with accepted lawyers.</p>
+            </div>
+            <a href="{% url 'my_cases' %}" class="bg-slate-800 hover:bg-slate-700 text-white px-5 py-2 rounded-lg transition-colors border border-white/10">
+                <i class="fas fa-arrow-left mr-2"></i> Back to Cases
+            </a>
+        </div>
+
+        <div class="glass-panel rounded-2xl overflow-hidden shadow-xl">
+            <table class="w-full text-left border-collapse">
+                <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 border-b border-white/5">
+                    <tr>
+                        <th class="px-6 py-4">Lawyer Name</th>
+                        <th class="px-6 py-4">Case Title</th>
+                        <th class="px-6 py-4">Sent Date</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-white/5 text-sm">
+                    {% for req in requests %}
+                    <tr class="hover:bg-white/5 transition-colors">
+                        <td class="px-6 py-4 font-medium text-white flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 font-bold">
+                                {{ req.lawyer.first_name|slice:":1" }}
+                            </div>
+                            Adv. {{ req.lawyer.first_name }}
+                        </td>
+                        <td class="px-6 py-4 text-slate-300">{{ req.case_title }}</td>
+                        <td class="px-6 py-4 text-slate-400">{{ req.created_at|date:"M d, Y" }}</td>
+                        <td class="px-6 py-4">
+                            {% if req.status == 'Accepted' %}
+                                <span class="bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/20">
+                                    <i class="fas fa-check-circle mr-1"></i> Accepted
+                                </span>
+                            {% elif req.status == 'Rejected' %}
+                                <span class="bg-red-500/10 text-red-400 px-3 py-1 rounded-full text-xs font-bold border border-red-500/20">
+                                    <i class="fas fa-times-circle mr-1"></i> Rejected
+                                </span>
+                            {% else %}
+                                <span class="bg-yellow-500/10 text-yellow-400 px-3 py-1 rounded-full text-xs font-bold border border-yellow-500/20">
+                                    <i class="fas fa-clock mr-1"></i> Pending
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-right">
+                            {% if req.status == 'Accepted' %}
+                                <a href="{% url 'case_chat' req.id %}" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all">
+                                    <i class="fas fa-comments mr-1"></i> Chat Now
+                                </a>
+                                
+                                <a href="{% url 'virtual_court_view' req.id %}" class="ml-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-lg shadow-purple-500/20 transition-all">
+                                    <i class="fas fa-gavel mr-1"></i> Court
+                                </a>
+                            {% else %}
+                                <span class="text-slate-600 italic text-xs">Wait for acceptance</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            <i class="fas fa-inbox text-4xl mb-3 opacity-50"></i>
+                            <p>You haven't sent any hiring requests yet.</p>
+                            <a href="{% url 'find_lawyer' %}" class="text-indigo-400 hover:underline mt-2 inline-block">Find a Lawyer</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
