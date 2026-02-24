@@ -7,7 +7,7 @@ import os
 # ==========================================
 # 🔴 KEY CHECK 🔴
 # Ensure this matches the key in your Google AI Studio
-GOOGLE_API_KEY = "" # REPLACE WITH YOUR REAL KEY
+GOOGLE_API_KEY = "AIzaSyDcC5evL35dUsmmuBI9VMrl8drlPgM0eOA" # REPLACE WITH YOUR REAL KEY
 genai.configure(api_key=GOOGLE_API_KEY)
 # ==========================================
 
